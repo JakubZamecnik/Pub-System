@@ -4,24 +4,24 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from models.menu import MenuItem
 from models.guest import Guest
-from models.table import Table
+from models.inventory import Inventory
 from models.waiter import Waiter
 
-# 1. Příprava menu
-pivo = MenuItem("Prazdroj 12°", 65.0)
-rizek = MenuItem("Kuřecí řízek", 185.0)
+# 1. Menu a Sklad (nezapomeň na item_id!)
+pivo = MenuItem(item_id="p1", name="Prazdroj 12°", price=65.0)
+sklad = Inventory()
+sklad.add_stock(pivo, 1) # Máme jen JEDNO pivo
 
-# 2. Příprava personálu a místa
+# 2. Lidé
 pepa = Waiter("Pepa")
-stul_1 = Table(table_number=1, capacity=4)
+jakub = Guest("Jakub")
 
-# 3. Hosté přicházejí
-host1 = Guest("Jakub")
-stul_1.add_guest(host1)
+# 3. Akce - zkusíme objednat dvě piva
+print("--- První objednávka ---")
+pepa.serve_item(jakub, pivo, sklad)
 
-# 4. Objednáváme
-pepa.serve_item(host1, pivo)
-pepa.serve_item(host1, rizek)
+print("\n--- Druhá objednávka ---")
+pepa.serve_item(jakub, pivo, sklad)
 
-# 5. Kontrola
-print(f"Celková útrata hosta {host1.name}: {host1.get_total()} Kč.")
+# 4. Výsledek
+print(f"\nCelková útrata: {jakub.get_total()} Kč.")

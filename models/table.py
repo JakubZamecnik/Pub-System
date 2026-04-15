@@ -22,3 +22,18 @@ class Table:
 
     def get_total_bill(self) -> float:
         return sum(guest.get_total() for guest in self.guests)
+
+        def is_table_clear(self) -> bool:
+        """Vrátí True, pokud všichni hosté u stolu zaplatili."""
+        if not self.guests:
+            return True
+        return all(guest.is_paid for guest in self.guests)
+
+    def checkout_table(self):
+        """Pokud je zaplaceno, vyndá všechny hosty a stůl je volný."""
+        if self.is_table_clear():
+            self.guests = []
+            print(f"Stůl č. {self.table_number} je nyní volný.")
+        else:
+            print(f"U stolu č. {self.table_number} ještě někdo dluží!")
+    
