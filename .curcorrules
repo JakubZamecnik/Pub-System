@@ -1,0 +1,20 @@
+# Project: Pub Management System
+Language: Python
+
+## Context
+Tato aplikace slouží pro správu hospody (sklad, objednávky, piva).
+
+## Tech Stack
+- Python 3.x
+- Databáze: SQLite (soubor `pub.db`)
+- Knihovny: sqlite3 (standardní knihovna Pythonu)
+
+## Rules & Standards
+- Kód piš v češtině/angličtině (vyber si).
+- Používej srozumitelné názvy proměnných.
+- Každá nová funkce musí mít krátký komentář.
+
+## Database Schema
+- Používáme SQLite (`cafe.db`).
+- Tabulka `inventory`: (item_id, name, price, quantity)
+- Tabulka `guest_orders`: (id, guest_name, item_name, price, is_paid)

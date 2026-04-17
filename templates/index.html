@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="cs">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Moje Hospoda</title>
+    <style>
+        /* Tady začíná to vizuálno */
+        .pub-floor {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            background: #f4e4bc;
+            /* Barva podlahy */
+            min-height: 400px;
+        }
+
+        .table {
+            width: 120px;
+            height: 120px;
+            background: #8b4513;
+            /* Dřevěný stůl */
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: transform 0.3s;
+            /* Efekt při najetí */
+        }
+
+        .table:hover {
+            transform: scale(1.1);
+            background: #a0522d;
+        }
+
+        .occupied {
+            border: 4px solid #ff4444;
+            /* Červený okraj, když tam někdo sedí */
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Interaktivní mapa hospody</h1>
+
+    <div class="pub-floor">
+        {% for table in tables %}
+        <div class="table {% if table.guests %}occupied{% endif %}" onclick="tableClicked('{{ table.id }}')">
+            Stůl {{ table.table_number }}
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        function tableClicked(id) {
+            alert("Klikl jsi na stůl číslo " + id + ". Tady pak JS zobrazí nabídku s číšníkem!");
+            // Sem později přidáme ty efekty a vyskakovací okna
+        }
+    </script>
+</body>
+
+</html>

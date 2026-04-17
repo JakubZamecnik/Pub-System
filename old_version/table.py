@@ -23,7 +23,7 @@ class Table:
     def get_total_bill(self) -> float:
         return sum(guest.get_total() for guest in self.guests)
 
-        def is_table_clear(self) -> bool:
+    def is_table_clear(self) -> bool:
         """Vrátí True, pokud všichni hosté u stolu zaplatili."""
         if not self.guests:
             return True
