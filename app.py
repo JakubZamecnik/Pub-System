@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import List
@@ -64,16 +64,17 @@ def home():
     vsechny_stoly = Table.query.all()
     return render_template('index.html', tables=vsechny_stoly)
 
+from flask import jsonify # Přidej jsonify do importů nahoře
 
-@app.route('/objednat')
-def objednat():
-
-    pivo = MenuItem.query.first()
-    host = Guest.query.first()
+@app.route('/api/objednat/<int:table_id>', methods=['POST'])
+def api_objednat(table_id):
+    # Najdeme první pivo v menu
+    pivo = MenuItem.query.filter_by(category="Nápoje").first()
+    # Najdeme prvního hosta u tohoto stolu
+    host = Guest.query.filter_by(table_id=table_id).first()
+    
     if not host:
-        host = Guest(name="Jakub")
-        db.session.add(host)
-        db.session.commit()
+        return jsonify({"success": False, "message": "U stolu nikdo nesedí!"}), 400
 
     sklad = Inventory.query.filter_by(menu_item_id=pivo.id).first()
 
@@ -82,9 +83,13 @@ def objednat():
         nova_objednavka = Order(guest_id=host.id, menu_item_id=pivo.id)
         db.session.add(nova_objednavka)
         db.session.commit()
-        return f"Hotovo! Host {host.name} dostal {pivo.name}. Na skladě zbývá {sklad.quantity} ks."
+        return jsonify({
+            "success": True, 
+            "message": f"Pivo doručeno hostu {host.name}!",
+            "remaining": sklad.quantity
+        })
     else:
-        return "Bohužel, pivo došlo!"
+        return jsonify({"success": False, "message": "Pivo došlo!"}), 400
 
 
 

@@ -3,60 +3,193 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Moje Hospoda</title>
+    <title>Hospoda u Pythona</title>
     <style>
-        /* Tady začíná to vizuálno */
-        .pub-floor {
-            display: flex;
-            gap: 20px;
-            padding: 20px;
+        body {
+            font-family: sans-serif;
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+        }
+
+        /* Plocha hospody */
+        .pub-area {
+            position: relative;
+            width: 850px;
+            height: 550px;
             background: #f4e4bc;
-            /* Barva podlahy */
-            min-height: 400px;
+            margin: 20px auto;
+            border-radius: 15px;
+            border: 10px solid #8b4513;
+        }
+
+        #bar {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 150px;
+            height: 80px;
+            background: #5d4037;
+            border: 3px solid #3e2723;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        #waiter {
+            position: absolute;
+            top: 100px;
+            left: 50px;
+            width: 40px;
+            height: 40px;
+            background: #e74c3c;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.8s ease-in-out;
+            z-index: 100;
+            border: 2px solid white;
+        }
+
+        .tables-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            padding-top: 100px;
         }
 
         .table {
             width: 120px;
             height: 120px;
             background: #8b4513;
-            /* Dřevěný stůl */
-            color: white;
+            margin: 20px;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
             border-radius: 10px;
-            transition: transform 0.3s;
-            /* Efekt při najetí */
+            position: relative;
+            color: white;
         }
 
-        .table:hover {
-            transform: scale(1.1);
-            background: #a0522d;
+        /* Bublina s akcemi */
+        .action-bubble {
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 5px;
+            border-radius: 8px;
+            display: none;
+            gap: 5px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            z-index: 200;
         }
 
-        .occupied {
-            border: 4px solid #ff4444;
-            /* Červený okraj, když tam někdo sedí */
+        .action-bubble button {
+            cursor: pointer;
+            border: none;
+            padding: 5px 8px;
+            border-radius: 4px;
+        }
+
+        .guests-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+
+        .individual-guest {
+            font-size: 25px;
         }
     </style>
 </head>
 
 <body>
-    <h1>Interaktivní mapa hospody</h1>
+    <h1>🍺 Hospoda u Pythona 🍺</h1>
 
-    <div class="pub-floor">
-        {% for table in tables %}
-        <div class="table {% if table.guests %}occupied{% endif %}" onclick="tableClicked('{{ table.id }}')">
-            Stůl {{ table.table_number }}
+    <div class="pub-area">
+        <div id="bar">
+            <img src="{{ url_for('static', filename='bar.png') }}" alt="Výčep"
+                style="width: 100%; height: 100%; object-fit: cover; border-radius: 5px;">
         </div>
-        {% endfor %}
+
+        <div id="waiter">🤵</div>
+
+        <div class="tables-container">
+            {% for table in tables %}
+            <div id="table-{{ table.id }}" class="table">
+                <span>Stůl {{ table.table_number }}</span>
+
+                <div class="guests-wrapper" onclick="clickGuest(event, '{{ table.id }}')">
+                    {% for guest in table.guests %}
+                    <span class="individual-guest">👤</span>
+                    {% endfor %}
+
+                    {% if not table.guests %}
+                    <span style="font-size: 12px; opacity: 0.5;">Prázdno</span>
+                    {% endif %}
+
+                    <div id="bubble-{{ table.id }}" class="action-bubble">
+                        <button style="background: #f1c40f;" onclick="orderBeer(event, '{{ table.id }}')">🍺</button>
+                        <button style="background: #2ecc71; color: white;"
+                            onclick="payBill(event, '{{ table.id }}')">💰</button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
     </div>
 
     <script>
-        function tableClicked(id) {
-            alert("Klikl jsi na stůl číslo " + id + ". Tady pak JS zobrazí nabídku s číšníkem!");
-            // Sem později přidáme ty efekty a vyskakovací okna
+        let currentOpenBubble = null;
+
+        function clickGuest(event, id) {
+            event.stopPropagation();
+            if (currentOpenBubble) {
+                document.getElementById('bubble-' + currentOpenBubble).style.display = 'none';
+            }
+
+            const waiter = document.getElementById('waiter');
+            const guestWrapper = event.currentTarget;
+            const area = document.querySelector('.pub-area').getBoundingClientRect();
+            const rect = guestWrapper.getBoundingClientRect();
+
+            waiter.style.left = (rect.left - area.left) + 'px';
+            waiter.style.top = (rect.top - area.top - 40) + 'px';
+
+            const bubble = document.getElementById('bubble-' + id);
+            bubble.style.display = 'flex';
+            currentOpenBubble = id;
+        }
+
+        function orderBeer(event, id) {
+            event.stopPropagation();
+
+            // Pošleme požadavek na náš Python server
+            fetch('/api/objednat/' + id, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("🍺 " + data.message + " (Skladem zbývá: " + data.remaining + ")");
+                        // Tady můžeme přidat efekt, že se pivo objeví na stole
+                    } else {
+                        alert("❌ Chyba: " + data.message);
+                    }
+                });
+        }
+
+
+        function payBill(event, id) {
+            event.stopPropagation();
+            alert("Stůl " + id + " chce platit.");
+            document.getElementById('bubble-' + id).style.display = 'none';
         }
     </script>
 </body>
